@@ -3,20 +3,20 @@
  * Promisify them if you can, otherwise roll your own promise returning function
  */ 
 
-var fs = require('fs');
-var request = require('request');
-var crypto = require('crypto');
 var Promise = require('bluebird');
+var fs = Promise.promisifyAll(require('fs'));
+var request = Promise.promisifyAll(require('request'));
+var crypto = require('crypto');
 
 // (1) Asyncronous HTTP request
-var getGitHubProfile = function(user, callback) {
+var getGitHubProfile = (user, callback) => {
   var options = {
     url: 'https://api.github.com/users/' + user,
     headers: { 'User-Agent': 'request' },
     json: true  // will JSON.parse(body) for us
   };
 
-  request.get(options, function(err, res, body) {
+  request.get(options, (err, res, body) => {
     if (err) {
       callback(err, null);
     } else if (body.message) {
@@ -27,8 +27,7 @@ var getGitHubProfile = function(user, callback) {
   });
 };
 
-var getGitHubProfileAsync; // TODO
-
+var getGitHubProfileAsync = Promise.promisify(getGitHubProfile);
 
 // (2) Asyncronous token generation
 var generateRandomToken = function(callback) {
@@ -38,12 +37,12 @@ var generateRandomToken = function(callback) {
   });
 };
 
-var generateRandomTokenAsync; // TODO
+var generateRandomTokenAsync = Promise.promisify(generateRandomToken);
 
 
 // (3) Asyncronous file manipulation
-var readFileAndMakeItFunny = function(filePath, callback) {
-  fs.readFile(filePath, 'utf8', function(err, file) {
+var readFileAndMakeItFunny = (filePath, callback) => {
+  fs.readFile(filePath, 'utf8', (err, file) => {
     if (err) { return callback(err); }
    
     var funnyFile = file.split('\n')
@@ -52,11 +51,11 @@ var readFileAndMakeItFunny = function(filePath, callback) {
       })
       .join('\n');
 
-    callback(funnyFile);
+    callback(null, funnyFile);
   });
 };
 
-var readFileAndMakeItFunnyAsync; // TODO
+var readFileAndMakeItFunnyAsync = Promise.promisify(readFileAndMakeItFunny);
 
 // Export these functions so we can test them and reuse them in later exercises
 module.exports = {
